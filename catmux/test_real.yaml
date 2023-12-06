@@ -1,0 +1,29 @@
+---
+common:
+  default_window: rcs_client
+parameters:
+  robot_name: diffbot
+  map_name: ts_1st
+  world_name: map_ts_1st #map_ts_1st_no_marker
+  min_height_for_move: 0.0
+  map_filter_name: aksk_keepout
+  use_simulator: True
+  headless: True
+  camera_name: camera
+  rviz_name: limo_nav.rviz
+  server_address: wataru-orin
+  cmd_vel_topic: /diff_cont/cmd_vel_unstamped
+windows:
+  - name: 3dliar_start
+    commands:
+      - ros2 launch hesai_ros_driver start.py
+  - name: imu_node
+    commands:
+      - chmod 666 /dev/HWT905
+      - ros2 launch witmotion_ros wt905.launch.py sim:=${sim}
+  - name: fake_robot
+    commands:
+      - ros2 launch robot_navigation
+  - name: dlio
+    commands:
+      - ros2 launch dlio dlio.launch.py 

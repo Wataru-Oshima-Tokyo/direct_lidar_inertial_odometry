@@ -16,12 +16,12 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 
 def generate_launch_description():
-    current_pkg = FindPackageShare('direct_lidar_inertial_odometry')
+    current_pkg = FindPackageShare('dlio')
 
     # Set default arguments
-    rviz = LaunchConfiguration('rviz', default='false')
+    rviz = LaunchConfiguration('rviz', default='true')
     pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points_raw')
-    imu_topic = LaunchConfiguration('imu_topic', default='imu_raw')
+    imu_topic = LaunchConfiguration('imu_topic', default='imu/data')
 
     # Define arguments
     declare_rviz_arg = DeclareLaunchArgument(
@@ -46,7 +46,7 @@ def generate_launch_description():
 
     # DLIO Odometry Node
     dlio_odom_node = Node(
-        package='direct_lidar_inertial_odometry',
+        package='dlio',
         executable='dlio_odom_node',
         output='screen',
         parameters=[dlio_yaml_path, dlio_params_yaml_path],
@@ -64,7 +64,7 @@ def generate_launch_description():
 
     # DLIO Mapping Node
     dlio_map_node = Node(
-        package='direct_lidar_inertial_odometry',
+        package='dlio',
         executable='dlio_map_node',
         output='screen',
         parameters=[dlio_yaml_path, dlio_params_yaml_path],

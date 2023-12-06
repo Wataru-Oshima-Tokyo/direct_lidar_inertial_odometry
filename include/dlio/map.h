@@ -14,7 +14,7 @@
 
 // ROS
 #include "rclcpp/rclcpp.hpp"
-#include "direct_lidar_inertial_odometry/srv/save_pcd.hpp"
+#include "dlio/srv/save_pcd.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
 // PCL
@@ -38,8 +38,8 @@ private:
   void publishTimer();
   void callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& keyframe);
 
-  void savePCD(std::shared_ptr<direct_lidar_inertial_odometry::srv::SavePCD::Request> req,
-               std::shared_ptr<direct_lidar_inertial_odometry::srv::SavePCD::Response> res);
+  void savePCD(std::shared_ptr<dlio::srv::SavePCD::Request> req,
+               std::shared_ptr<dlio::srv::SavePCD::Response> res);
 
   rclcpp::TimerBase::SharedPtr publish_timer;
 
@@ -47,7 +47,7 @@ private:
   rclcpp::CallbackGroup::SharedPtr keyframe_cb_group, save_pcd_cb_group;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub;
 
-  rclcpp::Service<direct_lidar_inertial_odometry::srv::SavePCD>::SharedPtr save_pcd_srv;
+  rclcpp::Service<dlio::srv::SavePCD>::SharedPtr save_pcd_srv;
 
   pcl::PointCloud<PointType>::Ptr dlio_map;
   pcl::VoxelGrid<PointType> voxelgrid;
