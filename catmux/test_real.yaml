@@ -14,16 +14,16 @@ parameters:
   server_address: wataru-orin
   cmd_vel_topic: /diff_cont/cmd_vel_unstamped
 windows:
+  - name: go1_start
+    commands: 
+      - ros2 launch unitree_bringup go1_bringup.launch.py 
   - name: 3dliar_start
     commands:
       - ros2 launch hesai_ros_driver start.py
   - name: imu_node
     commands:
       - chmod 666 /dev/HWT905
-      - ros2 launch witmotion_ros wt905.launch.py sim:=${sim}
-  - name: fake_robot
-    commands:
-      - ros2 launch robot_navigation
+      - ros2 launch witmotion_ros wt905.launch.py sim:=false
   - name: dlio
     commands:
-      - ros2 launch dlio dlio.launch.py 
+      - ros2 launch dlio dlio_slam.launch.py 

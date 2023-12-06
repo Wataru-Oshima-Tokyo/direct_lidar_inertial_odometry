@@ -512,6 +512,7 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::msg::PointCloud2::SharedP
       this->sensor = dlio::SensorType::VELODYNE;
       break;
     } else if (field.name == "timestamp") {
+      
       this->sensor = dlio::SensorType::HESAI;
       break;
     }
@@ -653,9 +654,16 @@ void dlio::OdomNode::deskewPointcloud() {
 
   // don't process scans until IMU data is present
   if (!this->first_valid_scan) {
-    if (this->imu_buffer.empty() || this->scan_stamp <= this->imu_buffer.back().stamp) {
+    if (this->imu_buffer.empty()){
+      RCLCPP_ERROR(this->get_logger(), "imu_buffer is empty");
       return;
     }
+    else if (this->scan_stamp <= this->imu_buffer.back().stamp) {
+      RCLCPP_INFO(this->get_logger(), "Time sync error - Scan stamp: %f, IMU stamp: %f", 
+                  this->scan_stamp, this->imu_buffer.back().stamp);
+      return;
+    }
+
 
     this->first_valid_scan = true;
     this->T_prior = this->T; // assume no motion for the first scan
@@ -736,6 +744,7 @@ void dlio::OdomNode::initializeDLIO() {
 void dlio::OdomNode::callbackPointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr pc) {
 
   std::unique_lock<decltype(this->main_loop_running_mutex)> lock(main_loop_running_mutex);
+  RCLCPP_INFO(this->get_logger(), "Receivd point cloud!");
   this->main_loop_running = true;
   lock.unlock();
 
@@ -757,6 +766,7 @@ void dlio::OdomNode::callbackPointCloud(const sensor_msgs::msg::PointCloud2::Sha
   this->preprocessPoints();
 
   if (!this->first_valid_scan) {
+    RCLCPP_FATAL(this->get_logger(), "Not a valid first_valid_scan");
     return;
   }
 
