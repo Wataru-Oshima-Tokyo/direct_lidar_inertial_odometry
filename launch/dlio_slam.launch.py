@@ -36,7 +36,7 @@ def generate_launch_description():
     current_pkg = FindPackageShare('dlio')
 
     # Set default arguments
-    rviz = LaunchConfiguration('rviz', default='true')
+    rviz = LaunchConfiguration('rviz', default='false')
     pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points_raw')
     imu_topic = LaunchConfiguration('imu_topic', default='imu/data')
 
@@ -95,11 +95,18 @@ def generate_launch_description():
 
     
 
-    fake_scane_move = Node(
+    fake_scan_move = Node(
         package='fake_frame',
         executable='fake_scan',
         name='fake_base_link',
             parameters=[{'target_topic': "scan_for_move"}]    
+    )
+
+    fake_scan = Node(
+        package='fake_frame',
+        executable='fake_scan',
+        name='fake_base_link',
+            parameters=[{'target_topic': "scan"}]    
     )
 
 
@@ -138,12 +145,6 @@ def generate_launch_description():
         )
     )
 
-    # delayed_fake_odom =   RegisterEventHandler(
-    #     event_handler=OnProcessStart(
-    #         target_action=static_world_to_map_node,
-    #         on_start=[velodyne_to_base_link],
-    #     )
-    # )
 
     delayed_fake_map_to_odom =   RegisterEventHandler(
         event_handler=OnProcessStart(
@@ -170,7 +171,8 @@ def generate_launch_description():
         static_world_to_map_node,
         delayed_dlio_server,
         static_base_footprint_to_lidar,
-        # fake_scane_move,
+        fake_scan_move,
+        fake_scan,
         static_base_link_to_fake_laser,
         delayed_fake_map_to_odom,
         rviz_node
