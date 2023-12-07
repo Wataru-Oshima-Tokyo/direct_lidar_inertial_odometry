@@ -137,11 +137,11 @@ def generate_launch_description():
         output='screen',
         )
 
-    static_map_to_odom_node =  Node(
+    static_base_footprint_to_velodyne_base_link_node =  Node(
             package='tf2_ros',
             executable='static_transform_publisher',
             name='map_to_odom',
-            arguments=['0', '0', '0', '0', '0', '0', '1', 'map', 'odom']
+            arguments=['0', '0', '0', '0', '0', '0', '1', 'base_footprint', 'velodyne_base_link']
     )
 
     delayed_dlio_server =   RegisterEventHandler(
@@ -152,10 +152,10 @@ def generate_launch_description():
     )
 
 
-    delayed_fake_map_to_odom =   RegisterEventHandler(
+    delayed_fake_base_footprint_to_velodyne_base_link =   RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=static_world_to_map_node,
-            on_start=[static_map_to_odom_node],
+            on_start=[static_base_footprint_to_velodyne_base_link_node],
         )
     )
 
@@ -181,6 +181,6 @@ def generate_launch_description():
         fake_scan,
         occupied_cell_node,
         static_base_link_to_fake_laser,
-        delayed_fake_map_to_odom,
+        delayed_fake_base_footprint_to_velodyne_base_link,
         rviz_node
     ])
