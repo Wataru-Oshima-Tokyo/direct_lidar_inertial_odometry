@@ -93,7 +93,13 @@ def generate_launch_description():
                 ]
     )
 
-    
+    occupied_cell_node = Node(
+            package='occupied_grid_publisher',
+            executable='occupied_grid_publisher',
+            name='occupied_grid_publisher',
+            output="screen"
+    )
+
 
     fake_scan_move = Node(
         package='fake_frame',
@@ -173,6 +179,7 @@ def generate_launch_description():
         static_base_footprint_to_lidar,
         fake_scan_move,
         fake_scan,
+        occupied_cell_node,
         static_base_link_to_fake_laser,
         delayed_fake_map_to_odom,
         rviz_node
