@@ -115,6 +115,16 @@ def generate_launch_description():
         output='screen',
         )
 
+<<<<<<< HEAD
+=======
+    static_base_footprint_to_velodyne_base_link_node =  Node(
+            package='tf2_ros',
+            executable='static_transform_publisher',
+            name='map_to_odom',
+            arguments=['0', '0', '0', '0', '0', '0', '1', 'base_footprint', 'velodyne_base_link']
+    )
+
+>>>>>>> 0a5df6cb7523a5b1cb43f9a768b25dacb359174c
     delayed_dlio_server =   RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=static_world_to_map_node,
@@ -123,6 +133,16 @@ def generate_launch_description():
     )
 
 
+<<<<<<< HEAD
+=======
+    delayed_fake_base_footprint_to_velodyne_base_link =   RegisterEventHandler(
+        event_handler=OnProcessStart(
+            target_action=static_world_to_map_node,
+            on_start=[static_base_footprint_to_velodyne_base_link_node],
+        )
+    )
+
+>>>>>>> 0a5df6cb7523a5b1cb43f9a768b25dacb359174c
     # RViz node
     rviz_config_path = PathJoinSubstitution([current_pkg, 'launch', 'dlio.rviz'])
     rviz_node = Node(
@@ -142,5 +162,9 @@ def generate_launch_description():
         delayed_dlio_server,
         static_base_footprint_to_lidar,
         static_base_link_to_fake_laser,
+<<<<<<< HEAD
+=======
+        delayed_fake_base_footprint_to_velodyne_base_link,
+>>>>>>> 0a5df6cb7523a5b1cb43f9a768b25dacb359174c
         rviz_node
     ])
