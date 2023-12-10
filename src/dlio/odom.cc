@@ -744,7 +744,6 @@ void dlio::OdomNode::initializeDLIO() {
 void dlio::OdomNode::callbackPointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr pc) {
 
   std::unique_lock<decltype(this->main_loop_running_mutex)> lock(main_loop_running_mutex);
-  RCLCPP_INFO(this->get_logger(), "Receivd point cloud!");
   this->main_loop_running = true;
   lock.unlock();
 

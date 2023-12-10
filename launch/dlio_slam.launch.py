@@ -93,28 +93,6 @@ def generate_launch_description():
                 ]
     )
 
-    occupied_cell_node = Node(
-            package='occupied_grid_publisher',
-            executable='occupied_grid_publisher',
-            name='occupied_grid_publisher',
-            output="screen"
-    )
-
-
-    fake_scan_move = Node(
-        package='fake_frame',
-        executable='fake_scan',
-        name='fake_base_link',
-            parameters=[{'target_topic': "scan_for_move"}]    
-    )
-
-    fake_scan = Node(
-        package='fake_frame',
-        executable='fake_scan',
-        name='fake_base_link',
-            parameters=[{'target_topic': "scan"}]    
-    )
-
 
     static_world_to_map_node =  Node(
             package='tf2_ros',
@@ -137,13 +115,6 @@ def generate_launch_description():
         output='screen',
         )
 
-    static_map_to_odom_node =  Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='map_to_odom',
-            arguments=['0', '0', '0', '0', '0', '0', '1', 'map', 'odom']
-    )
-
     delayed_dlio_server =   RegisterEventHandler(
         event_handler=OnProcessStart(
             target_action=static_world_to_map_node,
@@ -151,13 +122,6 @@ def generate_launch_description():
         )
     )
 
-
-    delayed_fake_map_to_odom =   RegisterEventHandler(
-        event_handler=OnProcessStart(
-            target_action=static_world_to_map_node,
-            on_start=[static_map_to_odom_node],
-        )
-    )
 
     # RViz node
     rviz_config_path = PathJoinSubstitution([current_pkg, 'launch', 'dlio.rviz'])
@@ -177,10 +141,6 @@ def generate_launch_description():
         static_world_to_map_node,
         delayed_dlio_server,
         static_base_footprint_to_lidar,
-        fake_scan_move,
-        fake_scan,
-        occupied_cell_node,
         static_base_link_to_fake_laser,
-        delayed_fake_map_to_odom,
         rviz_node
     ])
