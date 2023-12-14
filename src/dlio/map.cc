@@ -44,10 +44,12 @@ void dlio::MapNode::getParams() {
   this->declare_parameter<std::string>("odom/odom_frame", "odom");
   this->declare_parameter<double>("map/sparse/frequency", 1.0);
   this->declare_parameter<double>("map/sparse/leafSize", 0.5);
+  this->declare_parameter<std::string>("save_map_path", "/");
 
   this->get_parameter("odom/odom_frame", this->odom_frame);
   this->get_parameter("map/sparse/frequency", this->publish_freq_);
   this->get_parameter("map/sparse/leafSize", this->leaf_size_);
+  this->get_parameter("save_map_path", this->save_map_path);
 }
 
 void dlio::MapNode::start() {
@@ -87,7 +89,7 @@ void dlio::MapNode::savePCD(std::shared_ptr<dlio::srv::SavePCD::Request> req,
   pcl::PointCloud<PointType>::Ptr m = std::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map);
 
   float leaf_size = req->leaf_size;
-  std::string p = req->save_path;
+  std::string p = this->save_map_path;//req->save_path;
 
   std::cout << std::setprecision(2) << "Saving map to " << p + "/dlio_map.pcd"
     << " with leaf size " << to_string_with_precision(leaf_size, 2) << "... "; std::cout.flush();
@@ -104,7 +106,9 @@ void dlio::MapNode::savePCD(std::shared_ptr<dlio::srv::SavePCD::Request> req,
 
   if (res->success) {
     std::cout << "done" << std::endl;
+    res->message = "Map saved successfully.";
   } else {
     std::cout << "failed" << std::endl;
+    res->message = "Failed to save the map.";
   }
 }

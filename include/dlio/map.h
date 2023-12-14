@@ -53,6 +53,7 @@ private:
   pcl::VoxelGrid<PointType> voxelgrid;
 
   std::string odom_frame;
+  std::string save_map_path;
 
   double publish_freq_;
   double leaf_size_;

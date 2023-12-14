@@ -31,9 +31,12 @@ from launch.event_handlers import OnProcessStart, OnProcessExit
 
 from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
+from nav2_common.launch import RewrittenYaml
+
 
 def generate_launch_description():
     current_pkg = FindPackageShare('dlio')
+    map_handler_pkg = get_package_share_directory("map_handler")
 
     # Set default arguments
     rviz = LaunchConfiguration('rviz', default='false')
@@ -60,7 +63,17 @@ def generate_launch_description():
     # Load parameters
     dlio_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', 'dlio.yaml'])
     dlio_params_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', 'params.yaml'])
+    map_handler_pkg = os.path.join(map_handler_pkg, 'pcd')
 
+    param_substitutions = {
+        'save_map_path': map_handler_pkg}
+
+    configured_dlio_yaml_path = RewrittenYaml(
+            source_file=dlio_yaml_path,
+            root_key='',
+            param_rewrites=param_substitutions,
+            convert_types=True)
+    
     dlio_nodes = GroupAction(
         actions=[   
                 # DLIO Odometry Node
@@ -85,9 +98,10 @@ def generate_launch_description():
                     package='dlio',
                     executable='dlio_map_node',
                     output='screen',
-                    parameters=[dlio_yaml_path, dlio_params_yaml_path],
+                    parameters=[dlio_yaml_path, configured_dlio_yaml_path],
                     remappings=[
                         ('keyframes', 'dlio/odom_node/pointcloud/keyframe'),
+
                     ],
                 )
                 ]

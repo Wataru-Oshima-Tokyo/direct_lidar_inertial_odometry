@@ -19,7 +19,7 @@
 
     pointcloud/deskew: true
     pointcloud/voxelize: true
-
+    save_map_path: /home/user/humble_ws
     imu/calibration: true
     imu/intrinsics/accel/bias: [ 0.0, 0.0, 0.0 ]
     imu/intrinsics/accel/sm:   [ 1.,  0.,  0.,
