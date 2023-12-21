@@ -25,7 +25,7 @@ dlio::MapNode::MapNode(): Node("dlio_map_node") {
   this->keyframe_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("keyframes", 10,
       std::bind(&dlio::MapNode::callbackKeyframe, this, std::placeholders::_1), keyframe_sub_opt);
 
-  this->map_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("map", 100);
+  this->world_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("world", 100);
 
   this->save_pcd_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   this->save_pcd_srv = this->create_service<dlio::srv::SavePCD>("save_pcd",
@@ -58,11 +58,11 @@ void dlio::MapNode::start() {
 void dlio::MapNode::publishTimer() {
 
   if (this->dlio_map->points.size() == this->dlio_map->width * this->dlio_map->height) {
-    sensor_msgs::msg::PointCloud2 map_ros;
-    pcl::toROSMsg(*this->dlio_map, map_ros);
-    map_ros.header.stamp = this->now();
-    map_ros.header.frame_id = this->odom_frame;
-    this->map_pub->publish(map_ros);
+    sensor_msgs::msg::PointCloud2 world_ros;
+    pcl::toROSMsg(*this->dlio_map, world_ros);
+    world_ros.header.stamp = this->now();
+    world_ros.header.frame_id = this->odom_frame;
+    this->world_pub->publish(world_ros);
   }
 
 }

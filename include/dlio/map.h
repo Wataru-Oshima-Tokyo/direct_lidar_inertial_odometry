@@ -45,7 +45,7 @@ private:
 
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr keyframe_sub;
   rclcpp::CallbackGroup::SharedPtr keyframe_cb_group, save_pcd_cb_group;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr map_pub;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr world_pub;
 
   rclcpp::Service<dlio::srv::SavePCD>::SharedPtr save_pcd_srv;
 
