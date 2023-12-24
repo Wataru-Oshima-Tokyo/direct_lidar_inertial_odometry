@@ -13,7 +13,7 @@
 /**:
   ros__parameters:
     use_sim_time: false
-    frames/odom: odom
+    frames/odom: dlio_odom #odom
     frames/baselink: base_link
     frames/lidar: velodyne
     frames/imu: imu_link
