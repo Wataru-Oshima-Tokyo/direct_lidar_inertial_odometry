@@ -33,36 +33,22 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import RewrittenYaml
 
-
-def generate_launch_description():
+def launch_setup(context, *args, **kwargs):
+    # Set default arguments
     current_pkg = FindPackageShare('dlio')
     map_handler_pkg = get_package_share_directory("map_handler")
-
-    # Set default arguments
-    rviz = LaunchConfiguration('rviz', default='false')
-    pointcloud_topic = LaunchConfiguration('pointcloud_topic', default='points_raw')
-    imu_topic = LaunchConfiguration('imu_topic', default='imu/data')
-
-    # Define arguments
-    declare_rviz_arg = DeclareLaunchArgument(
-        'rviz',
-        default_value=rviz,
-        description='Launch RViz'
-    )
-    declare_pointcloud_topic_arg = DeclareLaunchArgument(
-        'pointcloud_topic',
-        default_value=pointcloud_topic,
-        description='Pointcloud topic name'
-    )
-    declare_imu_topic_arg = DeclareLaunchArgument(
-        'imu_topic',
-        default_value=imu_topic,
-        description='IMU topic name'
-    )
-
+    pointcloud_topic = LaunchConfiguration('pointcloud_topic').perform(context)
+    imu_topic = LaunchConfiguration('imu_topic').perform(context)
+    dlio_yaml_name = LaunchConfiguration('dlio_yaml_name').perform(context)
+    dlio_params_name = LaunchConfiguration('dlio_params_name').perform(context)
+    dlio_yaml_name +=".yaml"
+    dlio_params_name +=".yaml"
     # Load parameters
-    dlio_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', 'dlio.yaml'])
-    dlio_params_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', 'params.yaml'])
+    dlio_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', dlio_yaml_name])
+    dlio_params_yaml_path = PathJoinSubstitution([current_pkg, 'cfg', dlio_params_name])
+
+
+
     map_handler_pkg = os.path.join(map_handler_pkg, 'pcd')
 
     param_substitutions = {
@@ -125,7 +111,7 @@ def generate_launch_description():
         package='tf2_ros',
         executable='static_transform_publisher',
         name="base_footprint_imu_link",
-        arguments='0.0 0.0 0.0 0.0 0.0 0.0 base_footprint lidar_link'.split(' '),
+        arguments='0.0 0.0 0.0 0.0 0.0 0.0 base_link lidar_link'.split(' '),
         output='screen',
         )
 
@@ -148,13 +134,52 @@ def generate_launch_description():
         condition=IfCondition(LaunchConfiguration('rviz'))
     )
 
-    return LaunchDescription([
-        declare_rviz_arg,
-        declare_pointcloud_topic_arg,
-        declare_imu_topic_arg,
+    return [
         static_world_to_map_node,
         delayed_dlio_server,
         static_base_footprint_to_lidar,
         static_base_link_to_fake_laser,
         rviz_node
+    ]
+
+def generate_launch_description():
+
+
+
+    # Define arguments
+    declare_rviz_arg = DeclareLaunchArgument(
+        'rviz',
+        default_value='false',
+        description='Launch RViz'
+    )
+    declare_pointcloud_topic_arg = DeclareLaunchArgument(
+        'pointcloud_topic',
+        default_value='points_raw',
+        description='Pointcloud topic name'
+    )
+    declare_imu_topic_arg = DeclareLaunchArgument(
+        'imu_topic',
+        default_value='imu/data',
+        description='IMU topic name'
+    )
+    declare_dlio_yaml_name_arg = DeclareLaunchArgument(
+        'dlio_yaml_name',
+        default_value='dlio',
+        description='dlio_yaml_name'
+    )
+    declare_dlio_params_name_arg = DeclareLaunchArgument(
+        'dlio_params_name',
+        default_value='params',
+        description='dlio_params_name'
+    )
+
+
+
+    return LaunchDescription([
+        declare_rviz_arg,
+        declare_pointcloud_topic_arg,
+        declare_imu_topic_arg,
+        declare_dlio_yaml_name_arg,
+        declare_dlio_params_name_arg,
+        OpaqueFunction(function=launch_setup)
     ])
