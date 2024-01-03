@@ -32,6 +32,8 @@
 #include <sys/times.h>
 #include <thread>
 
+
+
 template <typename T>
 std::string to_string_with_precision(const T a_value, const int n = 6)
 {
@@ -64,6 +66,7 @@ namespace dlio {
     union {
       std::uint32_t t; // time since beginning of scan in nanoseconds
       float time; // time since beginning of scan in seconds
+      std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
       double timestamp; // absolute timestamp in seconds
     };
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
@@ -80,3 +83,19 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
                                  (double, timestamp, timestamp))
 
 typedef dlio::Point PointType;
+
+// Livox-specific structure for livox_ros_driver2/CustomMsg
+struct LivoxPoint {
+  LivoxPoint(): data{0.f, 0.f, 0.f, 1.f} {}
+  PCL_ADD_POINT4D;
+  float intensity; // intensity
+  std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
+  EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+} EIGEN_ALIGN16;
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(LivoxPoint,
+                                 (float, x, x)
+                                 (float, y, y)
+                                 (float, z, z)
+                                 (float, intensity, intensity)
+                                 (std::uint32_t, offset_time, offset_time))

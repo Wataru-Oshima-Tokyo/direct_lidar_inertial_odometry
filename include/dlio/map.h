@@ -16,6 +16,7 @@
 #include "rclcpp/rclcpp.hpp"
 #include "dlio/srv/save_pcd.hpp"
 #include <sensor_msgs/msg/point_cloud2.hpp>
+#include <livox_ros_driver2/msg/custom_msg.hpp>
 
 // PCL
 #include <pcl/filters/voxel_grid.h>
