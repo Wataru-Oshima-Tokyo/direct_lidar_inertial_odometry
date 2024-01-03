@@ -51,7 +51,7 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 #include <nano_gicp/nano_gicp.h>
 
 namespace dlio {
-  enum class SensorType { OUSTER, VELODYNE, HESAI, UNKNOWN };
+  enum class SensorType { OUSTER, VELODYNE, HESAI, LIVOX, UNKNOWN };
 
   class OdomNode;
   class MapNode;

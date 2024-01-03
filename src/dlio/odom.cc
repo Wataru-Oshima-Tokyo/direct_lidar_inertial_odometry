@@ -187,6 +187,8 @@ void dlio::OdomNode::getParams() {
   dlio::declare_param(this, "frames/baselink", this->baselink_frame, "base_link");
   dlio::declare_param(this, "frames/lidar", this->lidar_frame, "lidar");
   dlio::declare_param(this, "frames/imu", this->imu_frame, "imu");
+  dlio::declare_param(this, "sensor_type", this->sensor_type, "velodyne");
+  this->sensor_type = boost::to_lower_copy(this->sensor_type);
 
   // Deskew Flag
   dlio::declare_param(this, "pointcloud/deskew", this->deskew_, true);
@@ -504,19 +506,17 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::msg::PointCloud2::SharedP
 
   // automatically detect sensor type
   this->sensor = dlio::SensorType::UNKNOWN;
-  for (auto &field : pc->fields) {
-    if (field.name == "t") {
-      this->sensor = dlio::SensorType::OUSTER;
-      break;
-    } else if (field.name == "time") {
-      this->sensor = dlio::SensorType::VELODYNE;
-      break;
-    } else if (field.name == "timestamp") {
-      
-      this->sensor = dlio::SensorType::HESAI;
-      break;
-    }
+
+  if(this->sensor_type == "velodyne"){
+    this->sensor = dlio::SensorType::VELODYNE;
+  }else if (this->sensor_type == "ouster"){
+    this->sensor = dlio::SensorType::OUSTER;
+  }else if (this->sensor_type == "hesai"){
+    this->sensor = dlio::SensorType::HESAI;
+  }else if (this->sensor_type == "livox"){
+    this->sensor = dlio::SensorType::LIVOX;
   }
+
 
   if (this->sensor == dlio::SensorType::UNKNOWN) {
     this->deskew_ = false;
@@ -629,6 +629,15 @@ void dlio::OdomNode::deskewPointcloud() {
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
       { return pt.value().timestamp; };
 
+  } else if (this->sensor == dlio::SensorType::LIVOX){
+    
+    point_time_cmp = [](const PointType& p1, const PointType& p2)
+      { return p1.timestamp < p2.timestamp; };
+    point_time_neq = [](boost::range::index_value<PointType&, long> p1,
+                        boost::range::index_value<PointType&, long> p2)
+      { return p1.value().timestamp != p2.value().timestamp; };
+    extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
+      { return pt.value().timestamp; };
   }
 
   // copy points into deskewed_scan_ in order of timestamp
@@ -1910,6 +1919,11 @@ void dlio::OdomNode::debug() {
   } else if (this->sensor == dlio::SensorType::HESAI) {
     std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
       << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
+                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+      << "|" << std::endl;
+  } else if (this->sensor == dlio::SensorType::LIVOX){
+    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+      << "Sensor Rates: LIVOX @ " + to_string_with_precision(avg_lidar_rate, 2)
                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
       << "|" << std::endl;
   } else {

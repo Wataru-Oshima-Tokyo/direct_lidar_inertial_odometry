@@ -17,6 +17,7 @@
     frames/baselink: base_link
     frames/lidar: velodyne
     frames/imu: imu_link
+    sensor_type: hesai  #velodyne, hesai, ouster, livox
 
     map/waitUntilMove: false
     map/dense/filtered: false
