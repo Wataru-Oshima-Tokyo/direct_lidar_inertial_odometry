@@ -1,0 +1,31 @@
+---
+common:
+  default_window: rcs_client
+parameters:
+  robot_name: diffbot
+  map_name: ts_1st
+  world_name: map_ts_1st #map_ts_1st_no_marker
+  min_height_for_move: 0.0
+  map_filter_name: aksk_keepout
+  use_simulator: True
+  headless: True
+  camera_name: camera
+  rviz_name: limo_nav.rviz
+  server_address: wataru-orin
+  cmd_vel_topic: /diff_cont/cmd_vel_unstamped
+windows:
+  - name: lidar_util
+    commands:
+      - ros2 launch robot_navigation velodyne_to_scan.launch.py min_height_for_move:=${min_height_for_move} use_sim_time:=${use_simulator}
+  - name: trimmed_points
+    commands:
+      - ros2 launch pointcloud_trim point_cloud_trim.launch.py 
+  - name: 3d_map
+    commands:
+      - ros2 launch sim_worlds2 launch_world.launch.py use_simulator:=${use_simulator} headless:=${headless} world_name:=${world_name} rviz_file:=${rviz_name}
+  - name: spawn_diffbot
+    commands:
+      - ros2 launch sim_worlds2 spawn_scout_mini.launch.py spawn_x_val:=3.0 spawn_z_val:=6.8
+  - name: dlio
+    commands:
+      - ros2 launch dlio dlio.launch.py 

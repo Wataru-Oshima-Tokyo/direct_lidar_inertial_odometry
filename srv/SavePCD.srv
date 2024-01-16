@@ -1,4 +1,4 @@
 float32 leaf_size
-string save_path
 ---
 bool success
+string message

@@ -12,11 +12,21 @@
 
 #include "dlio/dlio.h"
 
-class dlio::MapNode {
+// ROS
+#include "rclcpp/rclcpp.hpp"
+#include "dlio/srv/save_pcd.hpp"
+#include <sensor_msgs/msg/point_cloud2.hpp>
+
+// PCL
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/io/pcd_io.h>
+#include <pcl_conversions/pcl_conversions.h>
+
+class dlio::MapNode: public rclcpp::Node {
 
 public:
 
-  MapNode(ros::NodeHandle node_handle);
+  MapNode();
   ~MapNode();
 
   void start();
@@ -25,24 +35,25 @@ private:
 
   void getParams();
 
-  void publishTimer(const ros::TimerEvent& e);
-  void callbackKeyframe(const sensor_msgs::PointCloud2ConstPtr& keyframe);
+  void publishTimer();
+  void callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstSharedPtr& keyframe);
 
-  bool savePcd(direct_lidar_inertial_odometry::save_pcd::Request& req,
-               direct_lidar_inertial_odometry::save_pcd::Response& res);
+  void savePCD(std::shared_ptr<dlio::srv::SavePCD::Request> req,
+               std::shared_ptr<dlio::srv::SavePCD::Response> res);
 
-  ros::NodeHandle nh;
-  ros::Timer publish_timer;
+  rclcpp::TimerBase::SharedPtr publish_timer;
 
-  ros::Subscriber keyframe_sub;
-  ros::Publisher map_pub;
+  rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr keyframe_sub;
+  rclcpp::CallbackGroup::SharedPtr keyframe_cb_group, save_pcd_cb_group;
+  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr world_pub;
 
-  ros::ServiceServer save_pcd_srv;
+  rclcpp::Service<dlio::srv::SavePCD>::SharedPtr save_pcd_srv;
 
   pcl::PointCloud<PointType>::Ptr dlio_map;
   pcl::VoxelGrid<PointType> voxelgrid;
 
   std::string odom_frame;
+  std::string save_map_path;
 
   double publish_freq_;
   double leaf_size_;

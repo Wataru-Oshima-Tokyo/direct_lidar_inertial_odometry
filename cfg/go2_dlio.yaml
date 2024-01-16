@@ -31,7 +31,10 @@
     extrinsics/baselink2imu/R: [ 1.,  0.,  0.,
                                 0.,  1.,  0.,
                                 0.,  0.,  1. ]
-    extrinsics/baselink2lidar/t: [ 0.,  0.,  0. ]
-    extrinsics/baselink2lidar/R: [ 1.,  0.,  0.,
-                                0.,  1.,  0.,
-                                0.,  0.,  1. ]
+    extrinsics/baselink2lidar/t: [ 0.1634, 0., 0.116 ] # Replace with actual values
+    extrinsics/baselink2lidar/R: [ 0., -1.,  0.,
+                                  1.,  0.,  0.,
+                                  0.,  0.,  1. ]
+    # extrinsics/baselink2lidar/R: [ 1., 0.,  0.,
+    #                                 0.,  1.,  0.,
+    #                                 0.,  0.,  1. ]
