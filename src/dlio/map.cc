@@ -25,7 +25,7 @@ dlio::MapNode::MapNode(): Node("dlio_map_node") {
   this->keyframe_sub = this->create_subscription<sensor_msgs::msg::PointCloud2>("keyframes", 10,
       std::bind(&dlio::MapNode::callbackKeyframe, this, std::placeholders::_1), keyframe_sub_opt);
 
-  this->world_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("world", 100);
+  this->world_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("world_map", 100);
 
   this->save_pcd_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   this->save_pcd_srv = this->create_service<dlio::srv::SavePCD>("save_pcd",
