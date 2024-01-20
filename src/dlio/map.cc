@@ -30,6 +30,8 @@ dlio::MapNode::MapNode(): Node("dlio_map_node") {
   this->save_pcd_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
   this->save_pcd_srv = this->create_service<dlio::srv::SavePCD>("save_pcd",
       std::bind(&dlio::MapNode::savePCD, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, this->save_pcd_cb_group);
+  this->get_pcd_srv = this->create_service<techshare_ros_pkg2::srv::GetPCD>("get_pcd",
+      std::bind(&dlio::MapNode::getPCD, this, std::placeholders::_1, std::placeholders::_2), rmw_qos_profile_services_default, this->save_pcd_cb_group);
 
   this->dlio_map = std::make_shared<pcl::PointCloud<PointType>>();
 
@@ -83,14 +85,38 @@ void dlio::MapNode::callbackKeyframe(const sensor_msgs::msg::PointCloud2::ConstS
 
 }
 
+void dlio::MapNode::getPCD(std::shared_ptr<techshare_ros_pkg2::srv::GetPCD::Request> req,
+                            std::shared_ptr<techshare_ros_pkg2::srv::GetPCD::Response> res) {
+
+  pcl::PointCloud<PointType>::Ptr m = std::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map);
+    // Convert the pcl::PointCloud to sensor_msgs::msg::PointCloud2
+  float leaf_size = req->leaf_size;
+    // voxelize map
+  pcl::VoxelGrid<PointType> vg;
+  vg.setLeafSize(leaf_size, leaf_size, leaf_size);
+  vg.setInputCloud(m);
+  vg.filter(*m);
+  sensor_msgs::msg::PointCloud2 ros_cloud;
+  pcl::toROSMsg(*m, ros_cloud);
+
+  res->cloud = ros_cloud;
+  res->success = true;
+  res->message = "Succeeded to covner the cloud";
+}
+
 void dlio::MapNode::savePCD(std::shared_ptr<dlio::srv::SavePCD::Request> req,
                             std::shared_ptr<dlio::srv::SavePCD::Response> res) {
 
   pcl::PointCloud<PointType>::Ptr m = std::make_shared<pcl::PointCloud<PointType>>(*this->dlio_map);
 
   float leaf_size = req->leaf_size;
-  std::string p = this->save_map_path;//req->save_path;
-
+  std::string p;
+  if (req->save_path.empty()) {
+    p = this->save_map_path; //->save_path;
+  } else {
+    p = req->save_path;
+  }
+  
   std::cout << std::setprecision(2) << "Saving map to " << p + "/dlio_map.pcd"
     << " with leaf size " << to_string_with_precision(leaf_size, 2) << "... "; std::cout.flush();
 
