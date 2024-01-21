@@ -316,6 +316,7 @@ private:
   double gravity_;
 
   bool adaptive_params_;
+  bool two_dimension;
 
   double obs_submap_thresh_;
   double obs_keyframe_thresh_;

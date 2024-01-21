@@ -218,6 +218,7 @@ void dlio::OdomNode::getParams() {
 
   // Adaptive Parameters
   dlio::declare_param(this, "adaptive", this->adaptive_params_, true);
+  dlio::declare_param(this, "two_dimension", this->two_dimension, false);
 
   // Extrinsics
   std::vector<double> t_default{0., 0., 0.};
@@ -323,7 +324,11 @@ void dlio::OdomNode::publishPose() {
 
   this->odom_ros.pose.pose.position.x = this->state.p[0];
   this->odom_ros.pose.pose.position.y = this->state.p[1];
-  this->odom_ros.pose.pose.position.z = this->state.p[2];
+  if (this->two_dimension){
+    this->odom_ros.pose.pose.position.z = 0.05;
+  }else{
+    this->odom_ros.pose.pose.position.z = this->state.p[2];
+  }
 
   this->odom_ros.pose.pose.orientation.w = this->state.q.w();
   this->odom_ros.pose.pose.orientation.x = this->state.q.x();
@@ -332,7 +337,11 @@ void dlio::OdomNode::publishPose() {
 
   this->odom_ros.twist.twist.linear.x = this->state.v.lin.w[0];
   this->odom_ros.twist.twist.linear.y = this->state.v.lin.w[1];
-  this->odom_ros.twist.twist.linear.z = this->state.v.lin.w[2];
+  if (this->two_dimension){
+    this->odom_ros.twist.twist.linear.z = 0.05;
+  }else{
+    this->odom_ros.twist.twist.linear.z = this->state.v.lin.w[2];
+  }
 
   this->odom_ros.twist.twist.angular.x = this->state.v.ang.b[0];
   this->odom_ros.twist.twist.angular.y = this->state.v.ang.b[1];
@@ -346,7 +355,11 @@ void dlio::OdomNode::publishPose() {
 
   this->pose_ros.pose.position.x = this->state.p[0];
   this->pose_ros.pose.position.y = this->state.p[1];
-  this->pose_ros.pose.position.z = this->state.p[2];
+  if(this->two_dimension){
+    this->pose_ros.pose.position.z = 0.05;
+  }else{
+    this->pose_ros.pose.position.z = this->state.p[2];
+  }
 
   this->pose_ros.pose.orientation.w = this->state.q.w();
   this->pose_ros.pose.orientation.x = this->state.q.x();
@@ -369,7 +382,12 @@ void dlio::OdomNode::publishToROS(pcl::PointCloud<PointType>::ConstPtr published
   p.header.frame_id = this->odom_frame;
   p.pose.position.x = this->state.p[0];
   p.pose.position.y = this->state.p[1];
-  p.pose.position.z = this->state.p[2];
+  if (this->two_dimension){
+    p.pose.position.z = 0.05;
+  }else{
+    p.pose.position.z = this->state.p[2];
+  }
+  
   p.pose.orientation.w = this->state.q.w();
   p.pose.orientation.x = this->state.q.x();
   p.pose.orientation.y = this->state.q.y();
@@ -387,7 +405,11 @@ void dlio::OdomNode::publishToROS(pcl::PointCloud<PointType>::ConstPtr published
 
   transformStamped.transform.translation.x = this->state.p[0];
   transformStamped.transform.translation.y = this->state.p[1];
-  transformStamped.transform.translation.z = this->state.p[2];
+  if (this->two_dimension){
+     transformStamped.transform.translation.z = 0.05;
+  }else{
+    transformStamped.transform.translation.z = this->state.p[2];
+  }
 
   transformStamped.transform.rotation.w = this->state.q.w();
   transformStamped.transform.rotation.x = this->state.q.x();
@@ -403,7 +425,12 @@ void dlio::OdomNode::publishToROS(pcl::PointCloud<PointType>::ConstPtr published
 
   transformStamped.transform.translation.x = this->extrinsics.baselink2imu.t[0];
   transformStamped.transform.translation.y = this->extrinsics.baselink2imu.t[1];
-  transformStamped.transform.translation.z = this->extrinsics.baselink2imu.t[2];
+  if (this->two_dimension){
+     transformStamped.transform.translation.z = 0.05;
+  }else{
+    transformStamped.transform.translation.z = this->extrinsics.baselink2imu.t[2];
+  }
+  
 
   Eigen::Quaternionf q(this->extrinsics.baselink2imu.R);
   transformStamped.transform.rotation.w = q.w();
@@ -420,7 +447,11 @@ void dlio::OdomNode::publishToROS(pcl::PointCloud<PointType>::ConstPtr published
 
   transformStamped.transform.translation.x = this->extrinsics.baselink2lidar.t[0];
   transformStamped.transform.translation.y = this->extrinsics.baselink2lidar.t[1];
-  transformStamped.transform.translation.z = this->extrinsics.baselink2lidar.t[2];
+  if (this->two_dimension){
+     transformStamped.transform.translation.z = 0.05;
+  }else{
+    transformStamped.transform.translation.z = this->extrinsics.baselink2lidar.t[2];
+  }
 
   Eigen::Quaternionf qq(this->extrinsics.baselink2lidar.R);
   transformStamped.transform.rotation.w = qq.w();
@@ -1461,7 +1492,12 @@ void dlio::OdomNode::computeConvexHull() {
     PointType pt;
     pt.x = this->keyframes[i].first.first[0];
     pt.y = this->keyframes[i].first.first[1];
-    pt.z = this->keyframes[i].first.first[2];
+    if (this->two_dimension){
+      pt.z = 0.05;
+    }else{
+      pt.z = this->keyframes[i].first.first[2];
+    }
+    
     cloud->push_back(pt);
   }
   lock.unlock();

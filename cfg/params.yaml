@@ -17,7 +17,7 @@
     frames/baselink: base_link
     frames/lidar: velodyne
     frames/imu: imu_link
-
+    two_dimension: true
     map/waitUntilMove: false
     map/dense/filtered: false
     map/sparse/frequency: 1.0
