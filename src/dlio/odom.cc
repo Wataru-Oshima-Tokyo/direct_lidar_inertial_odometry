@@ -43,6 +43,19 @@ dlio::OdomNode::OdomNode() : Node("dlio_odom_node") {
   this->imu_sub = this->create_subscription<sensor_msgs::msg::Imu>("imu", rclcpp::SensorDataQoS(),
       std::bind(&dlio::OdomNode::callbackImu, this, std::placeholders::_1), imu_sub_opt);
 
+
+  
+  this->sensor_type = boost::to_lower_copy(this->sensor_type);
+  this->livox_pub = this->create_publisher<sensor_msgs::msg::PointCloud2>("livox2dlio", 1);
+  
+  this->livox_cb_group = this->create_callback_group(rclcpp::CallbackGroupType::MutuallyExclusive);
+  auto livox_sub_opt = rclcpp::SubscriptionOptions();
+  livox_sub_opt.callback_group = this->livox_cb_group;
+  this->livox_sub = this->create_subscription<livox_ros_driver2::msg::CustomMsg>(this->livox_topic, rclcpp::SensorDataQoS(),
+    std::bind(&dlio::OdomNode::callbackLivox, this, std::placeholders::_1));
+
+
+
   this->odom_pub     = this->create_publisher<nav_msgs::msg::Odometry>("odom", 1);
   this->pose_pub     = this->create_publisher<geometry_msgs::msg::PoseStamped>("pose", 1);
   this->path_pub     = this->create_publisher<nav_msgs::msg::Path>("path", 1);
@@ -188,6 +201,10 @@ void dlio::OdomNode::getParams() {
   dlio::declare_param(this, "frames/lidar", this->lidar_frame, "lidar");
   dlio::declare_param(this, "frames/imu", this->imu_frame, "imu");
 
+  // for livox
+  dlio::declare_param(this, "sensor_type", this->sensor_type, "velodyne");
+  dlio::declare_param(this, "livox_custom_topic", this->livox_topic, "livox/lidar_xxx");
+
   // Deskew Flag
   dlio::declare_param(this, "pointcloud/deskew", this->deskew_, true);
 
@@ -261,6 +278,7 @@ void dlio::OdomNode::getParams() {
 
   dlio::declare_param(this, "odom/imu/approximateGravity", this->gravity_align_, true);
   dlio::declare_param(this, "imu/calibration", this->imu_calibrate_, true);
+  dlio::declare_param(this, "imu/normalized", this->imu_normalized_, false);
   dlio::declare_param(this, "imu/intrinsics/accel/bias", prior_accel_bias, accel_default);
   dlio::declare_param(this, "imu/intrinsics/gyro/bias", prior_gyro_bias, gyro_default);
 
@@ -542,12 +560,26 @@ void dlio::OdomNode::getScanFromROS(const sensor_msgs::msg::PointCloud2::SharedP
     } else if (field.name == "time") {
       this->sensor = dlio::SensorType::VELODYNE;
       break;
+    } else if (field.name == "offset_time") {
+      this->sensor = dlio::SensorType::LIVOX;
+      break;
     } else if (field.name == "timestamp") {
-      
       this->sensor = dlio::SensorType::HESAI;
       break;
     }
   }
+// RCLCPP_INFO(this->get_logger(), "\033[1;33m-->The sensor type is %d\033[0m", static_cast<int>(this->sensor));
+  // if(this->sensor_type == "velodyne"){
+  //   this->sensor = dlio::SensorType::VELODYNE;
+  // }else if (this->sensor_type == "ouster"){
+  //   this->sensor = dlio::SensorType::OUSTER;
+  // }else if (this->sensor_type == "hesai"){
+  //   this->sensor = dlio::SensorType::HESAI;
+  // }else if (this->sensor_type == "livox"){
+  //   this->sensor = dlio::SensorType::LIVOX;
+  // }
+
+
 
   if (this->sensor == dlio::SensorType::UNKNOWN) {
     this->deskew_ = false;
@@ -660,6 +692,15 @@ void dlio::OdomNode::deskewPointcloud() {
     extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
       { return pt.value().timestamp; };
 
+  } else if (this->sensor == dlio::SensorType::LIVOX){
+    
+    point_time_cmp = [](const PointType& p1, const PointType& p2)
+      { return p1.offset_time < p2.offset_time; };
+    point_time_neq = [](boost::range::index_value<PointType&, long> p1,
+                        boost::range::index_value<PointType&, long> p2)
+      { return p1.value().offset_time != p2.value().offset_time; };
+    extract_point_time = [&sweep_ref_time](boost::range::index_value<PointType&, long> pt)
+      { return sweep_ref_time + pt.value().offset_time * 1e-9f; };
   }
 
   // copy points into deskewed_scan_ in order of timestamp
@@ -875,6 +916,35 @@ void dlio::OdomNode::callbackPointCloud(const sensor_msgs::msg::PointCloud2::Sha
 
 }
 
+
+void dlio::OdomNode::callbackLivox(const livox_ros_driver2::msg::CustomMsg::SharedPtr livox) {
+
+  // convert custom livox message to pcl pointcloud
+  pcl::PointCloud<LivoxPoint>::Ptr cloud (new pcl::PointCloud<LivoxPoint>);
+
+  for (int i = 0; i < livox->point_num; i++) {
+    LivoxPoint p;
+    p.x = livox->points[i].x;
+    p.y = livox->points[i].y;
+    p.z = livox->points[i].z;
+    p.intensity = livox->points[i].reflectivity;
+    p.offset_time = livox->points[i].offset_time;
+    cloud->push_back(p);
+  }
+
+  // publish converted livox pointcloud
+  sensor_msgs::msg::PointCloud2 cloud_ros;
+  pcl::toROSMsg(*cloud, cloud_ros);
+
+
+  cloud_ros.header.stamp = livox->header.stamp;
+  cloud_ros.header.frame_id = this->lidar_frame;
+  // RCLCPP_INFO(this->get_logger(), "\033[1;34m----------->Publishing the modified point type msg\033[0m");
+  this->livox_pub->publish(cloud_ros);
+
+}
+
+
 void dlio::OdomNode::callbackImu(const sensor_msgs::msg::Imu::SharedPtr imu_raw) {
 
   this->first_imu_received = true;
@@ -891,9 +961,15 @@ void dlio::OdomNode::callbackImu(const sensor_msgs::msg::Imu::SharedPtr imu_raw)
   ang_vel[1] = imu->angular_velocity.y;
   ang_vel[2] = imu->angular_velocity.z;
 
-  lin_accel[0] = imu->linear_acceleration.x;
-  lin_accel[1] = imu->linear_acceleration.y;
-  lin_accel[2] = imu->linear_acceleration.z;
+  if (this->imu_normalized_) {
+    lin_accel[0] = imu->linear_acceleration.x * this->gravity_;
+    lin_accel[1] = imu->linear_acceleration.y * this->gravity_;
+    lin_accel[2] = imu->linear_acceleration.z * this->gravity_;
+  }else{
+    lin_accel[0] = imu->linear_acceleration.x;
+    lin_accel[1] = imu->linear_acceleration.y;
+    lin_accel[2] = imu->linear_acceleration.z;
+  }
 
   if (this->first_imu_stamp == 0.) {
     this->first_imu_stamp = imu_stamp_secs;
@@ -1948,6 +2024,12 @@ void dlio::OdomNode::debug() {
       << "Sensor Rates: Hesai @ " + to_string_with_precision(avg_lidar_rate, 2)
                                   + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
       << "|" << std::endl;
+  } else if (this->sensor == dlio::SensorType::LIVOX) {
+    std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
+      << "Sensor Rates: Livox @ " + to_string_with_precision(avg_lidar_rate, 2)
+                                  + " Hz, IMU @ " + to_string_with_precision(avg_imu_rate, 2) + " Hz"
+      << "|" << std::endl;
+  
   } else {
     std::cout << "| " << std::left << std::setfill(' ') << std::setw(66)
       << "Sensor Rates: Unknown LiDAR @ " + to_string_with_precision(avg_lidar_rate, 2)

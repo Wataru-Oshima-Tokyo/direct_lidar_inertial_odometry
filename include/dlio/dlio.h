@@ -51,7 +51,7 @@ std::string to_string_with_precision(const T a_value, const int n = 6)
 #include <nano_gicp/nano_gicp.h>
 
 namespace dlio {
-  enum class SensorType { OUSTER, VELODYNE, HESAI, UNKNOWN };
+  enum class SensorType { OUSTER, VELODYNE, HESAI, LIVOX, UNKNOWN };
 
   class OdomNode;
   class MapNode;
@@ -64,10 +64,22 @@ namespace dlio {
     union {
       std::uint32_t t; // time since beginning of scan in nanoseconds
       float time; // time since beginning of scan in seconds
+      std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
       double timestamp; // absolute timestamp in seconds
     };
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   } EIGEN_ALIGN16;
+
+  // Livox-specific structure for livox_ros_driver2/CustomMsg
+  struct LivoxPoint {
+    LivoxPoint(): data{0.f, 0.f, 0.f, 1.f} {}
+    PCL_ADD_POINT4D;
+    float intensity; // intensity
+    std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+  } EIGEN_ALIGN16;
+
+
 }
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
@@ -78,5 +90,12 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
                                  (std::uint32_t, t, t)
                                  (float, time, time)
                                  (double, timestamp, timestamp))
+
+POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::LivoxPoint,
+                                (float, x, x)
+                                (float, y, y)
+                                (float, z, z)
+                                (float, intensity, intensity)
+                                (std::uint32_t, offset_time, offset_time))
 
 typedef dlio::Point PointType;

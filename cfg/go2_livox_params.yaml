@@ -15,10 +15,9 @@
     use_sim_time: false
     frames/odom: dlio_odom #odom
     frames/baselink: base_link
-    frames/lidar: velodyne
-    frames/imu: imu_link
-    # sensor_type: velodyne  #velodyne, hesai, ouster, livox
-    two_dimension: false
+    frames/lidar: livox_frame
+    frames/imu: livox_frame
+    livox_custom_topic: livox/lidar_custom
     map/waitUntilMove: false
     map/dense/filtered: false
     map/sparse/frequency: 1.0
