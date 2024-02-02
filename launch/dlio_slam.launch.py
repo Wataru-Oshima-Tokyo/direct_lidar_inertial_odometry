@@ -107,13 +107,13 @@ def launch_setup(context, *args, **kwargs):
             name='base_link_to_fake_laser',
             arguments=['0', '0', '0', '0', '0', '0', '1', 'base_link', 'fake_laser']
     )
-    static_base_footprint_to_lidar  =  Node(
-        package='tf2_ros',
-        executable='static_transform_publisher',
-        name="base_footprint_imu_link",
-        arguments='0.0 0.0 0.0 0.0 0.0 0.0 base_link lidar_link'.split(' '),
-        output='screen',
-        )
+    # static_base_footprint_to_lidar  =  Node(
+    #     package='tf2_ros',
+    #     executable='static_transform_publisher',
+    #     name="base_footprint_imu_link",
+    #     arguments='0.0 0.0 0.0 0.0 0.0 0.0 base_link lidar_link'.split(' '),
+    #     output='screen',
+    #     )
 
     delayed_dlio_server =   RegisterEventHandler(
         event_handler=OnProcessStart(
@@ -137,7 +137,7 @@ def launch_setup(context, *args, **kwargs):
     return [
         static_world_to_map_node,
         delayed_dlio_server,
-        static_base_footprint_to_lidar,
+        # static_base_footprint_to_lidar,
         static_base_link_to_fake_laser,
         rviz_node
     ]
