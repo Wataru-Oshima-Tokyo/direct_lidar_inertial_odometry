@@ -70,16 +70,6 @@ namespace dlio {
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
   } EIGEN_ALIGN16;
 
-  // Livox-specific structure for livox_ros_driver2/CustomMsg
-  struct LivoxPoint {
-    LivoxPoint(): data{0.f, 0.f, 0.f, 1.f} {}
-    PCL_ADD_POINT4D;
-    float intensity; // intensity
-    std::uint32_t offset_time; // LIVOX: time from beginning of scan in nanoseconds
-    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-  } EIGEN_ALIGN16;
-
-
 }
 
 POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
@@ -91,11 +81,6 @@ POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::Point,
                                  (float, time, time)
                                  (double, timestamp, timestamp))
 
-POINT_CLOUD_REGISTER_POINT_STRUCT(dlio::LivoxPoint,
-                                (float, x, x)
-                                (float, y, y)
-                                (float, z, z)
-                                (float, intensity, intensity)
-                                (std::uint32_t, offset_time, offset_time))
+
 
 typedef dlio::Point PointType;
