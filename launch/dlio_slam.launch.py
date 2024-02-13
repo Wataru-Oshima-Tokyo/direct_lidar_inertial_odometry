@@ -101,12 +101,12 @@ def launch_setup(context, *args, **kwargs):
             arguments=['0', '0', '0', '0', '0', '0', '1', 'world', 'map']
     )
     
-    static_base_link_to_fake_laser =  Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='base_link_to_fake_laser',
-            arguments=['0', '0', '0', '0', '0', '0', '1', 'base_link', 'fake_laser']
-    )
+    # static_base_link_to_fake_laser =  Node(
+    #         package='tf2_ros',
+    #         executable='static_transform_publisher',
+    #         name='base_link_to_fake_laser',
+    #         arguments=['0', '0', '0', '0', '0', '0', '1', 'base_link', 'fake_laser']
+    # )
     # static_base_footprint_to_lidar  =  Node(
     #     package='tf2_ros',
     #     executable='static_transform_publisher',
@@ -138,7 +138,7 @@ def launch_setup(context, *args, **kwargs):
         static_world_to_map_node,
         delayed_dlio_server,
         # static_base_footprint_to_lidar,
-        static_base_link_to_fake_laser,
+        # static_base_link_to_fake_laser,
         rviz_node
     ]
 
