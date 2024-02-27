@@ -37,7 +37,6 @@
 #include <pcl/surface/concave_hull.h>
 #include <pcl/surface/convex_hull.h>
 #include <pcl_conversions/pcl_conversions.h>
-#include <livox_ros_driver2/msg/custom_msg.hpp>
 
 
 class dlio::OdomNode: public rclcpp::Node {
@@ -57,7 +56,6 @@ private:
   void getParams();
 
   void callbackPointCloud(const sensor_msgs::msg::PointCloud2::SharedPtr pc);
-  void callbackLivox(const livox_ros_driver2::msg::CustomMsg::SharedPtr livox);
   void callbackImu(const sensor_msgs::msg::Imu::SharedPtr imu);
 
   void publishPose();
@@ -115,9 +113,8 @@ private:
 
   // Subscribers
   rclcpp::Subscription<sensor_msgs::msg::PointCloud2>::SharedPtr lidar_sub;
-  rclcpp::Subscription<livox_ros_driver2::msg::CustomMsg>::SharedPtr livox_sub;
   rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub;
-  rclcpp::CallbackGroup::SharedPtr lidar_cb_group, imu_cb_group, livox_cb_group;
+  rclcpp::CallbackGroup::SharedPtr lidar_cb_group, imu_cb_group;
 
   // Publishers
   rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odom_pub;
@@ -126,7 +123,6 @@ private:
   rclcpp::Publisher<geometry_msgs::msg::PoseArray>::SharedPtr kf_pose_pub;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr kf_cloud_pub;
   rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr deskewed_pub;
-  rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr livox_pub;
 
   // TF
   std::shared_ptr<tf2_ros::TransformBroadcaster> br;
@@ -239,8 +235,6 @@ private:
     Eigen::Matrix4f baselink2lidar_T;
   }; Extrinsics extrinsics;
 
-  //livox
-  std::string livox_topic; 
 
   // IMU
   rclcpp::Time imu_stamp;
