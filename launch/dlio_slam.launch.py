@@ -67,7 +67,7 @@ def launch_setup(context, *args, **kwargs):
                     package='dlio',
                     executable='dlio_odom_node',
                     output='screen',
-                    parameters=[dlio_yaml_path, dlio_params_yaml_path],
+                    parameters=[configured_dlio_yaml_path, dlio_params_yaml_path],
                     remappings=[
                         ('pointcloud', pointcloud_topic),
                         ('imu', imu_topic),
@@ -84,7 +84,7 @@ def launch_setup(context, *args, **kwargs):
                     package='dlio',
                     executable='dlio_map_node',
                     output='screen',
-                    parameters=[dlio_yaml_path, configured_dlio_yaml_path],
+                    parameters=[configured_dlio_yaml_path, dlio_params_yaml_path],
                     remappings=[
                         ('keyframes', 'dlio/odom_node/pointcloud/keyframe'),
 

@@ -1,0 +1,55 @@
+common:
+  default_window: go2_start
+parameters:
+  angular_coefficient: 4
+  camera_device: /dev/video32
+  camera_name: front_camera
+  cmd_threshold: 1500
+  cmd_vel_topic: go2_cmd_vel
+  cyclonedds_config_file: $HOME/humble_ws/src/unitree_nav_kit/catmux/cyclonedds.xml
+  dlio_params_name: livox_params
+  dlio_yaml_name: livox_dlio
+  emcl_param_name: go2_lio_emcl
+  imu_topic: imu/data #livox/imu_custom
+  lidar_type: livox
+  linear_coefficient: 1
+  livox_address: 192.168.123.20
+  map_name: ts_1st
+  map_save_path: $HOME/humble_ws/src/nav2_kit/map_handler/maps/
+  min_height_for_move: -0.1
+  momo_directory: /home/ubuntu/humble_ws/src/nav2_kit/msg_ros_bridge/scripts/
+  password: '123'
+  pointcloud_topic: livox_normal
+  pointcloud_visualized_topic: utlidar/cloud
+  robot_id: go2_ubuntu
+  robot_type: go2
+  sim: false
+  source: $HOME/humble_ws/install/setup.bash
+windows:
+- commands:
+  - source ${source}
+  - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  - export ROS_DOMAIN_ID=10
+  - ros2 launch unitree_bringup go2_bringup_with_lidar.launch.py linear_coefficient:=${linear_coefficient}
+    angular_coefficient:=${angular_coefficient} cmd_vel_topic:=${cmd_vel_topic} lidar_type:=${lidar_type}
+    livox_address:=${livox_address}
+  name: fake_go2
+- commands:
+  - source ${source}
+  - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  - export ROS_DOMAIN_ID=10
+  - ros2 launch dlio dlio_slam.launch.py use_sim_time:=${sim} dlio_params_name:=${dlio_params_name}
+    dlio_yaml_name:=${dlio_yaml_name} imu_topic:=${imu_topic}  pointcloud_topic:=${pointcloud_topic}
+  name: lio_slam
+- commands:
+  - source ${source}
+  - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  - export ROS_DOMAIN_ID=10
+  - ros2 launch pointcloud_to_laserscan ${lidar_type}_to_scan.launch.py min_height_for_move:=${min_height_for_move}
+  name: ${lidar_type}_window
+- commands:
+  - source ${source}
+  - export RMW_IMPLEMENTATION=rmw_cyclonedds_cpp
+  - export ROS_DOMAIN_ID=10
+  - ros2 launch witmotion_ros wt905.launch.py sim:=false
+  name: witmotion

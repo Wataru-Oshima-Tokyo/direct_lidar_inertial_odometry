@@ -17,11 +17,10 @@
     frames/baselink: base_link
     frames/lidar: velodyne
     frames/imu: imu_link
-    two_dimension: false
     map/waitUntilMove: false
     map/dense/filtered: false
     map/sparse/frequency: 1.0
-    map/sparse/leafSize: 0.25
+    map/sparse/leafSize: 0.1
 
     odom/gravity: 9.80665
 
