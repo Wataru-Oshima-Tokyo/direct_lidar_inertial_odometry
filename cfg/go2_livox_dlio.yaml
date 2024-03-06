@@ -20,9 +20,7 @@
     pointcloud/deskew: false
     pointcloud/voxelize: true
     save_map_path: /home/user/humble_ws
-    two_dimension: true
     imu/calibration: true
-    imu/normalized: true
     imu/intrinsics/accel/bias: [ 0.0, 0.0, 0.0 ]
     imu/intrinsics/accel/sm:   [ 1.,  0.,  0.,
                                 0.,  1.,  0.,
