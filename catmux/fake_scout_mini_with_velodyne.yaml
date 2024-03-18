@@ -1,0 +1,42 @@
+---
+common:
+  default_window: dlio
+parameters:
+  robot_name: diffbot
+  map_name: ts_1st
+  world_name: map_ts_1st #map_ts_1st_no_marker
+  min_height_for_move: 0.0
+  map_filter_name: aksk_keepout
+  use_simulator: True
+  headless: True
+  camera_name: camera
+  rviz_name: limo_nav.rviz
+  server_address: wataru-orin
+  cmd_vel_topic: /diff_cont/cmd_vel_unstamped
+  source: $HOME/humble_ws/install/setup.bash
+windows:
+  # - name: go1_start
+  #   commands: 
+  #     - source ${source}
+  #     - ros2 launch gz_world fake_spawn_scout_mini.launch.py
+  # - name: imu_node
+  #   commands:
+  #     - source ${source}
+  #     - ros2 launch witmotion_ros wt905.launch.py sim:=false
+  # - name: imu_node2
+  #   commands:
+  #     - source ${source}
+  #     - ros2 launch robot_navigation start_microstrain.launch.py sim:=false
+  # - name: bag_file
+  #   commands:
+  #     - cd ../../record_bag
+  #     - bash record_start_pc_and_imu.sh
+  - name: dlio
+    commands:
+      - source ${source}
+      - sleep 3
+      - ros2 launch dlio dlio_slam.launch.py imu_topic:=imu/data
+  - name: rviz
+    commands:
+      - source ${source}
+      - ros2 launch robot_navigation show_rviz.launch.py rviz_file:=dlio_test.rviz
